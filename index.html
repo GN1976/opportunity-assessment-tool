@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Opportunity Assessment Tool</title>
+    <title>Opportunity Assessment Tool - Fair Process Workshop</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; min-height: 100vh; }
@@ -47,10 +47,16 @@
         .btn-secondary:hover { background: #45a049; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3); }
         .btn-info { background: #ff9800; color: white; }
         .btn-info:hover { background: #f57c00; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3); }
+        .btn-purple { background: #9c27b0; color: white; }
+        .btn-purple:hover { background: #7b1fa2; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(156, 39, 176, 0.3); }
         .fair-process-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 20px; margin: 30px 0; border-radius: 4px; }
-        .offline-info { background: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0; border-radius: 4px; }
+        .export-section { background: #f3e5f5; border: 2px solid #9c27b0; border-radius: 8px; padding: 30px; margin: 30px 0; display: none; }
+        .export-section.visible { display: block; }
+        .export-section h3 { color: #7b1fa2; margin-bottom: 15px; }
+        .export-content { background: white; padding: 20px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; border: 1px solid #ddd; margin-bottom: 15px; }
+        .copy-instruction { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
         @media (max-width: 768px) { .tool-grid, .interactive-grid, .example-grid { grid-template-columns: 1fr; } .steps { grid-template-columns: 1fr; } .content { padding: 20px; } }
-        @media print { body { background: white; padding: 0; } .container { box-shadow: none; } .button-group { display: none; } .offline-info { display: none; } }
+        @media print { body { background: white; padding: 0; } .container { box-shadow: none; } .button-group { display: none; } .export-section { display: block !important; } }
     </style>
 </head>
 <body>
@@ -60,9 +66,6 @@
             <p>A Fair Process tool for exploring business situations that need improvement</p>
         </div>
         <div class="content">
-            <div class="offline-info">
-                <strong>💡 Working Offline?</strong> Click "Download for Offline Use" below to save this tool to your computer. It works without internet and saves your progress!
-            </div>
             <div class="how-to-use">
                 <h3>📋 How to Use This Tool (3 Steps)</h3>
                 <div class="steps">
@@ -143,8 +146,21 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Export Section (hidden by default) -->
+            <div id="export-section" class="export-section">
+                <h3>📋 Copy-Paste Summary for Google Docs/Word</h3>
+                <div class="copy-instruction">
+                    <strong>📋 To copy:</strong> Click in the box below, press Ctrl+A (Select All), then Ctrl+C (Copy). 
+                    Paste into Google Docs or Word to collaborate with your team.
+                </div>
+                <div id="export-content" class="export-content"></div>
+                <button class="btn btn-purple" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+            </div>
+
             <div class="button-group">
                 <button class="btn btn-primary" onclick="clearForm()">🔄 Clear Form</button>
+                <button class="btn btn-purple" onclick="generateExport()">📋 Export for Google Docs</button>
                 <button class="btn btn-info" onclick="downloadForOffline()">💾 Download for Offline Use</button>
                 <button class="btn btn-secondary" onclick="downloadAsText()">📄 Download as Text</button>
                 <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
@@ -152,9 +168,90 @@
         </div>
     </div>
     <script>
-        function clearForm() { if(confirm('Clear all fields?')) { document.getElementById('current-situation').value=''; document.getElementById('desired-outcome').value=''; document.getElementById('opportunities').value=''; } }
-        function downloadAsText() { const c=document.getElementById('current-situation').value, d=document.getElementById('desired-outcome').value, o=document.getElementById('opportunities').value; const t=`OPPORTUNITY ASSESSMENT\nDate: ${new Date().toLocaleDateString()}\n\n1. CURRENT SITUATION:\n${c||'[Not filled]'}\n\n2. DESIRED OUTCOME:\n${d||'[Not filled]'}\n\n3. OPPORTUNITIES:\n${o||'[Not filled]'}`; const b=new Blob([t],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`Assessment_${new Date().toISOString().split('T')[0]}.txt`; a.click(); }
-        function downloadForOffline() { const c=document.getElementById('current-situation').value, d=document.getElementById('desired-outcome').value, o=document.getElementById('opportunities').value; const dateStr=new Date().toLocaleDateString(); const htmlContent=`<!DOCTYPE html>
+        function clearForm() { if(confirm('Clear all fields?')) { document.getElementById('current-situation').value=''; document.getElementById('desired-outcome').value=''; document.getElementById('opportunities').value=''; hideExport(); } }
+        
+        function hideExport() { document.getElementById('export-section').classList.remove('visible'); }
+        
+        function generateExport() {
+            const c = document.getElementById('current-situation').value || '[Not filled in]';
+            const d = document.getElementById('desired-outcome').value || '[Not filled in]';
+            const o = document.getElementById('opportunities').value || '[Not filled in]';
+            const dateStr = new Date().toLocaleDateString();
+            
+            const exportText = `OPPORTUNITY ASSESSMENT TOOL
+Fair Process Workshop
+Date: ${dateStr}
+
+================================================================================
+1. CURRENT SITUATION (Where we are now)
+================================================================================
+
+${c}
+
+
+================================================================================
+2. DESIRED OUTCOME (Where we want to be)
+================================================================================
+
+${d}
+
+
+================================================================================
+3. OPPORTUNITIES (What we can do)
+================================================================================
+
+${o}
+
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+☐ Share this assessment with relevant stakeholders
+☐ Discuss and refine as a team
+☐ Identify specific actions and owners
+☐ Set timeline for implementation
+☐ Schedule follow-up to review progress
+
+
+================================================================================
+Tool based on Fair Process principles: Engagement | Explanation | Expectation Clarity
+================================================================================`;
+            
+            document.getElementById('export-content').textContent = exportText;
+            document.getElementById('export-section').classList.add('visible');
+            document.getElementById('export-section').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        function copyToClipboard() {
+            const content = document.getElementById('export-content').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('✅ Copied! Now paste into Google Docs or Word.');
+            }).catch(() => {
+                const textArea = document.createElement('textarea');
+                textArea.value = content;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('✅ Copied! Now paste into Google Docs or Word.');
+            });
+        }
+        
+        function downloadAsText() { 
+            const c=document.getElementById('current-situation').value, d=document.getElementById('desired-outcome').value, o=document.getElementById('opportunities').value; 
+            const t=`OPPORTUNITY ASSESSMENT\nDate: ${new Date().toLocaleDateString()}\n\n1. CURRENT SITUATION:\n${c||'[Not filled]'}\n\n2. DESIRED OUTCOME:\n${d||'[Not filled]'}\n\n3. OPPORTUNITIES:\n${o||'[Not filled]'}`; 
+            const b=new Blob([t],{type:'text/plain'}); 
+            const a=document.createElement('a'); 
+            a.href=URL.createObjectURL(b); 
+            a.download=`Assessment_${new Date().toISOString().split('T')[0]}.txt`; 
+            a.click(); 
+        }
+        
+        function downloadForOffline() { 
+            const c=document.getElementById('current-situation').value, d=document.getElementById('desired-outcome').value, o=document.getElementById('opportunities').value; 
+            const dateStr=new Date().toLocaleDateString(); 
+            const htmlContent=`<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -221,7 +318,13 @@ textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgb
 function showSave() { alert('To save your changes:\\n1. Press Ctrl+S (Windows) or Cmd+S (Mac)\\n2. Choose where to save\\n3. Keep the .html extension\\n4. Reopen anytime to continue editing'); }
 <\/script>
 </body>
-</html>`; const blob=new Blob([htmlContent],{type:'text/html'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Opportunity_Assessment_${new Date().toISOString().split('T')[0]}.html`; a.click(); }
+</html>`; 
+            const blob=new Blob([htmlContent],{type:'text/html'}); 
+            const a=document.createElement('a'); 
+            a.href=URL.createObjectURL(blob); 
+            a.download=`Opportunity_Assessment_${new Date().toISOString().split('T')[0]}.html`; 
+            a.click(); 
+        }
     </script>
 </body>
 </html>
