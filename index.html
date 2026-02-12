@@ -45,9 +45,12 @@
         .btn-primary:hover { background: #5568d3; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3); }
         .btn-secondary { background: #4caf50; color: white; }
         .btn-secondary:hover { background: #45a049; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3); }
+        .btn-info { background: #ff9800; color: white; }
+        .btn-info:hover { background: #f57c00; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3); }
         .fair-process-box { background: #e3f2fd; border-left: 4px solid #2196f3; padding: 20px; margin: 30px 0; border-radius: 4px; }
+        .offline-info { background: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0; border-radius: 4px; }
         @media (max-width: 768px) { .tool-grid, .interactive-grid, .example-grid { grid-template-columns: 1fr; } .steps { grid-template-columns: 1fr; } .content { padding: 20px; } }
-        @media print { body { background: white; padding: 0; } .container { box-shadow: none; } .button-group { display: none; } }
+        @media print { body { background: white; padding: 0; } .container { box-shadow: none; } .button-group { display: none; } .offline-info { display: none; } }
     </style>
 </head>
 <body>
@@ -57,6 +60,9 @@
             <p>A Fair Process tool for exploring business situations that need improvement</p>
         </div>
         <div class="content">
+            <div class="offline-info">
+                <strong>💡 Working Offline?</strong> Click "Download for Offline Use" below to save this tool to your computer. It works without internet and saves your progress!
+            </div>
             <div class="how-to-use">
                 <h3>📋 How to Use This Tool (3 Steps)</h3>
                 <div class="steps">
@@ -139,6 +145,7 @@
             </div>
             <div class="button-group">
                 <button class="btn btn-primary" onclick="clearForm()">🔄 Clear Form</button>
+                <button class="btn btn-info" onclick="downloadForOffline()">💾 Download for Offline Use</button>
                 <button class="btn btn-secondary" onclick="downloadAsText()">📄 Download as Text</button>
                 <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
             </div>
@@ -147,6 +154,74 @@
     <script>
         function clearForm() { if(confirm('Clear all fields?')) { document.getElementById('current-situation').value=''; document.getElementById('desired-outcome').value=''; document.getElementById('opportunities').value=''; } }
         function downloadAsText() { const c=document.getElementById('current-situation').value, d=document.getElementById('desired-outcome').value, o=document.getElementById('opportunities').value; const t=`OPPORTUNITY ASSESSMENT\nDate: ${new Date().toLocaleDateString()}\n\n1. CURRENT SITUATION:\n${c||'[Not filled]'}\n\n2. DESIRED OUTCOME:\n${d||'[Not filled]'}\n\n3. OPPORTUNITIES:\n${o||'[Not filled]'}`; const b=new Blob([t],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=`Assessment_${new Date().toISOString().split('T')[0]}.txt`; a.click(); }
+        function downloadForOffline() { const c=document.getElementById('current-situation').value, d=document.getElementById('desired-outcome').value, o=document.getElementById('opportunities').value; const dateStr=new Date().toLocaleDateString(); const htmlContent=`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opportunity Assessment - ${dateStr}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; min-height: 100vh; }
+.container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); overflow: hidden; }
+.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
+.header h1 { font-size: 2em; margin-bottom: 10px; }
+.content { padding: 40px; }
+.section-title { font-size: 1.5em; color: #667eea; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid #667eea; }
+.interactive-tool { background: white; border: 2px solid #667eea; border-radius: 8px; padding: 30px; margin: 30px 0; }
+.interactive-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+.interactive-column { background: #f8f9ff; border: 2px solid #667eea; border-radius: 8px; padding: 20px; }
+.interactive-column h4 { color: #667eea; margin-bottom: 15px; font-size: 1.2em; }
+textarea { width: 100%; min-height: 150px; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; font-size: 0.95em; resize: vertical; margin-bottom: 15px; }
+textarea:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+.button-group { display: flex; gap: 15px; margin-top: 30px; justify-content: center; flex-wrap: wrap; }
+.btn { padding: 12px 30px; border: none; border-radius: 6px; font-size: 1em; cursor: pointer; transition: all 0.3s; font-weight: 600; }
+.btn-primary { background: #667eea; color: white; }
+.btn-secondary { background: #4caf50; color: white; }
+.btn-info { background: #ff9800; color: white; }
+.date-box { background: #f8f9ff; border-left: 4px solid #667eea; padding: 15px; margin-bottom: 20px; border-radius: 4px; }
+.info-box { background: #fff3e0; border-left: 4px solid #ff9800; padding: 15px; margin-bottom: 20px; border-radius: 4px; font-size: 0.9em; }
+@media (max-width: 768px) { .interactive-grid { grid-template-columns: 1fr; } .content { padding: 20px; } }
+@media print { body { background: white; padding: 0; } .container { box-shadow: none; } .button-group { display: none; } }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>🎯 Opportunity Assessment Tool</h1>
+<p>Your saved assessment - editable offline</p>
+</div>
+<div class="content">
+<div class="date-box"><strong>Date Created:</strong> ${dateStr}</div>
+<div class="info-box"><strong>💡 How to save changes:</strong> Edit the text boxes below, then press Ctrl+S (Windows) or Cmd+S (Mac) to save this file to your computer.</div>
+<div class="interactive-tool">
+<h2 class="section-title">✏️ Your Assessment (Editable)</h2>
+<div class="interactive-grid">
+<div class="interactive-column">
+<h4>1. Current Situation</h4>
+<textarea id="current-situation">${c.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+</div>
+<div class="interactive-column">
+<h4>2. Desired Outcome</h4>
+<textarea id="desired-outcome">${d.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+</div>
+<div class="interactive-column">
+<h4>3. Opportunities</h4>
+<textarea id="opportunities">${o.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+</div>
+</div>
+</div>
+<div class="button-group">
+<button class="btn btn-info" onclick="showSave()">💾 How to Save Changes</button>
+<button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+</div>
+</div>
+</div>
+<script>
+function showSave() { alert('To save your changes:\\n1. Press Ctrl+S (Windows) or Cmd+S (Mac)\\n2. Choose where to save\\n3. Keep the .html extension\\n4. Reopen anytime to continue editing'); }
+<\/script>
+</body>
+</html>`; const blob=new Blob([htmlContent],{type:'text/html'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`Opportunity_Assessment_${new Date().toISOString().split('T')[0]}.html`; a.click(); }
     </script>
 </body>
 </html>
